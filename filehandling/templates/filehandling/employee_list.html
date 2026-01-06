@@ -1,0 +1,133 @@
+{% include 'filehandling/navbar.html' %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Employee List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+        }
+        h1 {
+            text-align: center;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 0.6rem 1rem;
+            text-align: left;
+        }
+        th {
+            background-color: #f0f0f0;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .pagination {
+            margin-top: 1rem;
+        }
+        .pagination a {
+            padding: 0.5rem;
+            margin: 0 0.3rem;
+            border: 1px solid #ccc;
+            text-decoration: none;
+            color: #333;
+        }
+        .pagination span {
+            padding: 0.5rem;
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+
+<body>
+    <form method="GET" action="{% url 'employee-list' %}">
+        <input type="text" name="q" placeholder="Search with ID">
+    </form>
+    
+    <h1>Employee List</h1>
+    {% if page_obj %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Employee ID</th>
+                    <th>Issue Date</th>
+                    <th>Joining Date</th>
+                    <th>Blood Group</th>
+                    <th>Expiry Date</th>
+                    <th>NID Number</th>
+                    <th>Emergency Contact</th>
+                    <th>Image</th>
+                    <th>Designation</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for employee in page_obj %}
+                    <tr>
+                        <td>{{ employee.name }}</td>
+                        <td>{{ employee.emp_id }}</td>
+                        <td>{{ employee.issue_date }}</td>
+                        <td>{{ employee.joining_date }}</td>
+                        <td>{{ employee.blood_group }}</td>
+                        <td>{{ employee.expiry_date }}</td>
+                        <td>{{ employee.NID_number }}</td>
+                        {% if employee.emergency %}
+                        <td>{{ employee.emergency }}</td>
+                        {% else %}
+                        <td><a href="{% url 'emergency-contact' employee.emp_id %}">Add Contact</a></td>
+                        {% endif %}
+                        
+                        {% if employee.image %}
+                        <td>✔️</td>
+                        {% else %}
+                        <td><a href="{% url 'image' employee.emp_id %}">Add image</a></td>
+                        {% endif %}
+
+                        {% if employee.designation %}
+                        <td>{{employee.designation}}</td>
+                        {% else %}
+                        <td><a href="{% url 'designation' employee.emp_id %}">Add Designation</a></td>
+                        {% endif %}
+                        
+                        <td><a href="{% url 'update-employee' employee.emp_id %}">Update</a></td>
+                        <td><a href="{% url 'delete-employee' employee.emp_id %}">Delete</a></td>
+                        {% if employee.image and employee.emergency and employee.designation %}
+                        <td>
+                            <a href="{% url 'generate-id-card' employee.emp_id %}" target="_blank">Generate Card</a>
+                        </td>
+                        {% endif %}
+
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page=1">First</a>
+                <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+            {% endif %}
+
+            <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">Next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+            {% endif %}
+        </div>
+    {% else %}
+        <p>No employee records found.</p>
+    {% endif %}
+
+    <a href="{% url 'generate-all-ids' %}" class="btn btn-primary">Download All ID Cards as PDF</a>
+
+</body>
+</html>
